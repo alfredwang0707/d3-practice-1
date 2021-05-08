@@ -29,17 +29,21 @@ const DUMMY_DATA = [
 //   bars.data(DUMMY_DATA.slice(0, 2)).exit().remove();
 // }, 2000);
 
+const MARGINS = {top: 20, bottom: 10}
 const CHART_WIDTH = 600
-const CHART_HEIGHT = 400
+const CHART_HEIGHT = 400 - MARGINS.top - MARGINS.bottom
+
+let selectedData = DUMMY_DATA
+
 //defining range 
 const x = d3.scaleBand().rangeRound([0, CHART_WIDTH]).padding(0.1)
 const y = d3.scaleLinear().range([CHART_HEIGHT, 0])
-
+ 
 
 const charContainer = d3
   .select('svg')
-  .attr('width', CHART_WIDTH)
-  .attr('height', CHART_HEIGHT)
+  .attr('width', CHART_WIDTH) 
+  .attr('height', CHART_HEIGHT + MARGINS.top + MARGINS.bottom)
   //domain specify items to be positioned/scale
   //d is a just convention 
   x.domain(DUMMY_DATA.map((d) => d.region))
@@ -50,32 +54,82 @@ const charContainer = d3
   y.domain([0,d3.max(DUMMY_DATA, d=> d.value) + 3])
   
 const chart = charContainer.append('g')
+//append a new group
+//call is js function
+//axis bottom create a bottom axis
+//x holds all the info of x-axis scale
+//the bottom/top is not the actual position
 
 chart
-  .select('.bar')
-  .data(DUMMY_DATA)
-  .enter()
-  .append('rect')
-  .classed('bar,true')
-  //equall widthfor all bars/ calculates with padding
-  .attr('width', x.bandwidth() )
-  //set anonymous function to get data .value
-  .attr('height', (data) => CHART_HEIGHT - y(data.value))
-  .attr('x', (data) => x(data.region))
-  .attr('y', (data) => y(data.value))
+  .append('g') 
+  //takes the tick from outer line
+  .call(d3.axisBottom(x).tickSizeOuter(0))
+  .attr('transform', `translate(0,${CHART_HEIGHT })`)
+  .attr('color','#4F009E' )
 
-
-//adding labels for the chart
+function renderChart(){
   chart
-    .selectAll('.label')
-    .data(DUMMY_DATA)
+    .select('.bar')
+    .data(selectedData)
     .enter()
-    .append('text')
-    .text((data) => data.value)
-    //setting coordinates x y for the label
-    .attr('x', dat a => x(data.value) + x.bandwidth() / 2 )
-    // calculate form top, deduct not adding
-    .attr('y', data => y(data.value) - 20 )
-    //text anchor is a svg element we can set 
-    .attr('text-anchor', 'middle')
-    .classed('label', true)
+    .append('rect')
+    .classed('bar,true')
+    //equall widthfor all bars/ calculates with padding
+    .attr('width', x.bandwidth() )
+    //set anonymous function to get data .value
+    .attr('height', (data) => CHART_HEIGHT - y(data.value))
+    .attr('x', (data) => x(data.region))
+    .attr('y', (data) => y(data.value))
+  
+  chart.selectAll('.bar').data(selectedData).exit().remove() 
+
+  //adding labels for the chart
+    chart
+      .selectAll('.label')
+      .data(selectedData)
+      .enter()
+      .append('text')
+      .text((data) => data.value)
+      //setting coordinates x y for the label
+      .attr('x', dat a => x(data.value) + x.bandwidth() / 2 )
+      // calculate form top, deduct not adding
+      .attr('y', data => y(data.value) - 20 )
+      //text anchor is a svg element we can set 
+      .attr('text-anchor', 'middle')
+      .classed('label', true)
+
+  chart.selectAll('.label').data(selectedData).exit()
+}
+
+
+//initial chart at loading
+renderChart()
+//set up empty array first
+let unselectedIds =  []
+
+const listItems = d3
+  .select('#data')
+  .select('ul')
+  .selectAll('li').data(DUMMY_DATA)
+  .enter()
+  .append('li')
+
+listItems.append('span').text(data => data.region)
+
+listItems
+  .append('input')
+  .attr('type, checkbox')
+  .attr('checked', true)  
+  // on is an event listener
+  .on('change', (data) => {
+    if (unselectedIds.indexOf(data.id) === -1){
+      unselectedIds.push(data.id)
+    } else {
+      unselectedIds = unselectedIds.filter(id=> id !== data.id)
+    }
+    selectedData = DUMMY_DATA.filter(
+      (d) => unselectedIds.indexOf(data.id) === -1
+    )
+    renderChart()
+  }) 
+ 
