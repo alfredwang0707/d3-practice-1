@@ -70,7 +70,7 @@ chart
 function renderChart(){
   chart
     .select('.bar')
-    .data(selectedData)
+    .data(selectedData, data => data.id)
     .enter()
     .append('rect')
     .classed('bar,true')
@@ -80,13 +80,13 @@ function renderChart(){
     .attr('height', (data) => CHART_HEIGHT - y(data.value))
     .attr('x', (data) => x(data.region))
     .attr('y', (data) => y(data.value))
-  
-  chart.selectAll('.bar').data(selectedData).exit().remove() 
+  //to remove the bars from view when uncheck 
+  chart.selectAll('.bar').data(selectedData, data => data.id).exit().remove() 
 
   //adding labels for the chart
     chart
       .selectAll('.label')
-      .data(selectedData)
+      .data(selectedData,data => data.id )
       .enter()
       .append('text')
       .text((data) => data.value)
@@ -98,7 +98,7 @@ function renderChart(){
       .attr('text-anchor', 'middle')
       .classed('label', true)
 
-  chart.selectAll('.label').data(selectedData).exit()
+  chart.selectAll('.label').data(selectedData, data => data.id).exit().remove()
 }
 
 
@@ -128,8 +128,9 @@ listItems
       unselectedIds = unselectedIds.filter(id=> id !== data.id)
     }
     selectedData = DUMMY_DATA.filter(
-      (d) => unselectedIds.indexOf(data.id) === -1
+      (d) => unselectedIds.indexOf(d.id) === -1
     )
+    console.log(selectedData)
     renderChart()
   }) 
  
