@@ -63,3 +63,19 @@ chart
   .attr('height', (data) => CHART_HEIGHT - y(data.value))
   .attr('x', (data) => x(data.region))
   .attr('y', (data) => y(data.value))
+
+
+//adding labels for the chart
+  chart
+    .selectAll('.label')
+    .data(DUMMY_DATA)
+    .enter()
+    .append('text')
+    .text((data) => data.value)
+    //setting coordinates x y for the label
+    .attr('x', dat a => x(data.value) + x.bandwidth() / 2 )
+    // calculate form top, deduct not adding
+    .attr('y', data => y(data.value) - 20 )
+    //text anchor is a svg element we can set 
+    .attr('text-anchor', 'middle')
+    .classed('label', true)
